@@ -14,6 +14,10 @@ const EmailPhishingDetection = () => {
     "account locked", "security warning", "update password"
   ];
 
+
+
+
+  
   const analyzeEmail = () => {
     if (!emailContent.trim()) return;
 
