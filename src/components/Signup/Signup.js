@@ -19,8 +19,8 @@ const Signup = () => {
   
   // Cognito User Pool configuration
   const poolData = {
-    UserPoolId: 'us-east-1_nUgA57dcy',
-    ClientId: '4mg1ea8gb3hd998asfe0hm0l7k'
+    UserPoolId: 'us-east-1_ScYHWN24e',
+    ClientId: '7agpojb898lt5mniik9eqq60nn'
   };
   
   const userPool = new CognitoUserPool(poolData);
@@ -59,23 +59,22 @@ const Signup = () => {
     if (strength === 4) return 'bg-green-500';
     return '';
   };
-
   const handleSignup = async (e) => {
     e.preventDefault();
-    
+  
     if (password !== confirmPassword) {
       setErrorMessage('Passwords do not match');
       return;
     }
-    
+  
     if (passwordStrength() < 2) {
       setErrorMessage('Password is too weak');
       return;
     }
-    
+  
     setLoading(true);
     setErrorMessage('');
-    
+  
     // Define Cognito user attributes
     const attributeList = [
       new CognitoUserAttribute({
@@ -87,20 +86,23 @@ const Signup = () => {
         Value: email
       })
     ];
-    
+  
     try {
       // Sign up the user in Cognito
       userPool.signUp(email, password, attributeList, null, (err, result) => {
         setLoading(false);
-        
+  
         if (err) {
           console.error('Error during signup:', err);
           setErrorMessage(err.message || 'An error occurred during signup');
           return;
         }
-        
+  
         // Success - user account created
         console.log('User signup successful:', result);
+  
+        // Store username in localStorage
+        localStorage.setItem('username', name);
         setConfirmationSent(true);
       });
     } catch (error) {
@@ -109,6 +111,7 @@ const Signup = () => {
       setErrorMessage('An unexpected error occurred');
     }
   };
+  
 
   const handleConfirmation = async (e) => {
     e.preventDefault();

@@ -1,13 +1,12 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import {
   Shield, Link as LinkIcon, Mail, AlertTriangle, CheckCircle, Activity,
   Clock, ArrowRight, BarChart3, ChevronDown, Settings, Search, Bell, User,
-  Menu, X, Download, FileText, RefreshCw, LogOut
+  Menu, X, Download, FileText, RefreshCw, LogOut, TrendingUp, Info, Coffee
 } from 'lucide-react';
 import './Dashboard.css';
-import NavBar from '../NavBar/NavBar'; 
-// Mock Data (Outside Component)
+
+// Mock Data
 const mockData = [
   { id: 1, type: 'url', result: 'Safe', timestamp: Date.now(), url: 'https://example.com', details: 'Legitimate business site' },
   { id: 2, type: 'email', result: 'Suspicious', timestamp: Date.now() - 3600000, email: 'test@example.com', details: 'Unusual sender pattern' },
@@ -16,7 +15,7 @@ const mockData = [
   { id: 5, type: 'url', result: 'Suspicious', timestamp: Date.now() - 172800000, url: 'https://unusual-domain.net', details: 'Recently registered domain' },
 ];
 
-// Style mappings (to fix dynamic class issues)
+// Style mappings
 const statusColorMap = {
   safe: {
     badge: 'bg-emerald-100 text-emerald-800',
@@ -41,15 +40,28 @@ const statusColorMap = {
   }
 };
 
+
+
 const Dashboard = () => {
-  const navigate = useNavigate();
+  // States
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [timeframe, setTimeframe] = useState('7d');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [username, setUsername] = useState('');
+  
+  // Refs
   const profileMenuRef = useRef(null);
   const profileBtnRef = useRef(null);
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem('username');
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
 
   // Click outside handler for profile menu
   useEffect(() => {
@@ -102,13 +114,14 @@ const Dashboard = () => {
     
     return {
       ...totals,
-      safePercent: (totals.safe / totals.total) * 100 || 0,
-      suspiciousPercent: (totals.suspicious / totals.total) * 100 || 0,
-      phishingPercent: (totals.phishing / totals.total) * 100 || 0
+      safePercent: Math.round((totals.safe / totals.total) * 100) || 0,
+      suspiciousPercent: Math.round((totals.suspicious / totals.total) * 100) || 0,
+      phishingPercent: Math.round((totals.phishing / totals.total) * 100) || 0
     };
   }, [recentScans]);
 
-  // Memoized helper functions
+
+  // Helper functions
   const getStatusStyles = useCallback((result) => {
     const statusKey = result?.toLowerCase() || 'safe';
     return statusColorMap[statusKey] || statusColorMap.safe;
@@ -122,11 +135,6 @@ const Dashboard = () => {
       : `${Math.floor(diff / 86400)}d ago`;
   }, []);
 
-  const handleLogout = useCallback(() => {
-    // Add your logout logic here (e.g., clear tokens, state)
-    navigate('/');
-  }, [navigate]);
-
   const refreshData = useCallback(() => {
     setLoading(true);
     setTimeout(() => {
@@ -136,6 +144,7 @@ const Dashboard = () => {
     }, 1000);
   }, []);
 
+  // Navigation handlers
   const toggleMobileMenu = useCallback(() => {
     setMobileMenuOpen(prev => !prev);
   }, []);
@@ -144,116 +153,217 @@ const Dashboard = () => {
     setShowProfileMenu(prev => !prev);
   }, []);
 
+  const handleLogout = useCallback(() => {
+    // Add logout logic here
+    alert('Logout functionality would be implemented here');
+  }, []);
+
   return (
     <div className="dashboard-container">
+      {/* Background Elements */}
       <div className="background-elements" aria-hidden="true">
         <div className="bg-element bg-element-1"></div>
         <div className="bg-element bg-element-2"></div>
+        <div className="bg-element bg-element-3"></div>
       </div>
 
+      {/* Header/Navigation */}
       <header className="dashboard-header">
-      <NavBar />
+        <div className="header-content">
+          <div className="left-section">
+            <button className="menu-btn" onClick={toggleMobileMenu} aria-label="Toggle Menu">
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+            
+            <div className="logo">
+              <Shield size={24} className="text-primary" />
+              <h1>PhishGuard</h1>
+            </div>
+            
+            <nav className="desktop-nav">
+              <a href="#" className={`nav-link ${activeTab === 'overview' ? 'active' : ''}`}
+                 onClick={() => setActiveTab('overview')}>
+                Overview
+              </a>
+              <a href="#" className={`nav-link ${activeTab === 'url-analysis' ? 'active' : ''}`}
+                 onClick={() => setActiveTab('url-analysis')}>
+                URL Analysis
+              </a>
+              <a href="#" className={`nav-link ${activeTab === 'email-analysis' ? 'active' : ''}`}
+                 onClick={() => setActiveTab('email-analysis')}>
+                Email Analysis
+              </a>
+              <a href="#" className={`nav-link ${activeTab === 'reports' ? 'active' : ''}`}
+                 onClick={() => setActiveTab('reports')}>
+                Reports
+              </a>
+            </nav>
+          </div>
+          
+          <div className="right-section">
+            <div className="search-container">
+              <Search size={16} className="icon-sm" />
+              <input type="text" placeholder="Search..." aria-label="Search" />
+            </div>
+            
+            <button className="notification-btn" aria-label="Notifications">
+              <Bell size={20} />
+              <span className="notification-badge">3</span>
+            </button>
+            
+            <div className="profile-dropdown">
+              <button 
+                ref={profileBtnRef}
+                className="profile-btn" 
+                onClick={toggleProfileMenu}
+                aria-expanded={showProfileMenu}
+                aria-haspopup="true"
+              >
+                <User size={16} className="icon-sm" />
+                <span>{username || 'John Doe'}</span>
+                <ChevronDown size={16} className="icon-sm" />
+              </button>
+              
+              {showProfileMenu && (
+                <div ref={profileMenuRef} className="profile-menu">
+                  <button className="menu-item">
+                    <User size={16} />
+                    My Account
+                  </button>
+                  <button className="menu-item">
+                    <Settings size={16} />
+                    Settings
+                  </button>
+                  <button className="menu-item">
+                    <Download size={16} />
+                    Download Reports
+                  </button>
+                  <button className="menu-item" onClick={handleLogout}>
+                    <LogOut size={16} />
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
         
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <nav className="mobile-nav" aria-label="Mobile Navigation">
-            {['Dashboard', 'URL Analysis', 'Email Analysis', 'Reports'].map((item) => (
-              <Link 
-                key={item} 
-                to={`/${item.toLowerCase().replace(' ', '-')}`} 
-                className="mobile-nav-link"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {item}
-              </Link>
-            ))}
+            <a href="#" className={`mobile-nav-link ${activeTab === 'overview' ? 'active' : ''}`}
+               onClick={() => { setActiveTab('overview'); setMobileMenuOpen(false); }}>
+              Overview
+            </a>
+            <a href="#" className={`mobile-nav-link ${activeTab === 'url-analysis' ? 'active' : ''}`}
+               onClick={() => { setActiveTab('url-analysis'); setMobileMenuOpen(false); }}>
+              URL Analysis
+            </a>
+            <a href="#" className={`mobile-nav-link ${activeTab === 'email-analysis' ? 'active' : ''}`}
+               onClick={() => { setActiveTab('email-analysis'); setMobileMenuOpen(false); }}>
+              Email Analysis
+            </a>
+            <a href="#" className={`mobile-nav-link ${activeTab === 'reports' ? 'active' : ''}`}
+               onClick={() => { setActiveTab('reports'); setMobileMenuOpen(false); }}>
+              Reports
+            </a>
           </nav>
         )}
       </header>
 
       {/* Main Content */}
       <main className="dashboard-main">
-        {/* Stats Section */}
-        <section aria-labelledby="stats-heading">
-          <h2 id="stats-heading" className="sr-only">Security Statistics</h2>
-          <div className="stats-container">
-            {[
-              { label: 'Safe', value: stats.safe, percent: stats.safePercent, status: 'safe' },
-              { label: 'Suspicious', value: stats.suspicious, percent: stats.suspiciousPercent, status: 'suspicious' },
-              { label: 'Phishing', value: stats.phishing, percent: stats.phishingPercent, status: 'phishing' }
-            ].map(({ label, value, percent, status }) => {
-              const styles = getStatusStyles(status);
-              return (
-                <div key={label} className={`stat-card ${styles.statCard}`}>
-                  <div className={`stat-icon ${styles.statIcon}`}>
-                    <CheckCircle className={styles.statText} aria-hidden="true" />
-                  </div>
-                  <div className="stat-info">
-                    <p>{label}</p>
-                    <h2>{value} <span>({percent.toFixed(1)}%)</span></h2>
-                  </div>
-                </div>
-              );
-            })}
+        {/* Welcome Banner */}
+        <section className="welcome-banner">
+          <div className="welcome-content">
+            <h2>Welcome back, John!</h2>
+            <p>Your security dashboard is showing {stats.suspicious + stats.phishing} potential threats that need your attention.</p>
+          </div>
+          <div className="welcome-actions">
+            <button className="primary-btn">
+              <AlertTriangle size={16} />
+              View Threats
+            </button>
+            <button className="secondary-btn">
+              <Activity size={16} />
+              Run New Scan
+            </button>
           </div>
         </section>
 
-        {/* Recent Scans Section */}
-        <section className="recent-scans" aria-labelledby="recent-scans-heading">
+      
+      
+
+        {/* Educational Resources */}
+        <section className="educational-resources">
           <div className="section-header">
-            <h3 id="recent-scans-heading">Recent Scans</h3>
-            <button 
-              className="refresh-btn" 
-              onClick={refreshData}
-              disabled={loading}
-              aria-label="Refresh scans"
-            >
-              <RefreshCw className={`icon-sm ${loading ? 'animate-spin' : ''}`} aria-hidden="true" /> 
-              {loading ? 'Loading...' : 'Refresh'}
-            </button>
+            <h3>
+              <span role="img" aria-label="Book" className="mr-2">📚</span>
+              Educational Resources
+            </h3>
           </div>
-          <div className="scan-list" role="list">
-            {loading ? (
-              <div className="loading-indicator">
-                <RefreshCw className="icon animate-spin" />
-                <p>Loading scan results...</p>
+          <div className="resources-grid">
+            <a className="resource-card" href="https://www.consumer.ftc.gov/articles/how-recognize-and-avoid-phishing-scams" target="_blank" rel="noopener noreferrer">
+              <div className="resource-icon blue">
+                <Info size={24} />
               </div>
-            ) : recentScans.length === 0 ? (
-              <p className="empty-state">No scans available. Try scanning a URL or email.</p>
-            ) : (
-              recentScans.map(scan => {
-                const styles = getStatusStyles(scan.result);
-                return (
-                  <div key={scan.id} className="scan-item" role="listitem">
-                    <div className={`scan-icon ${styles.bg}`}>
-                      {scan.type === 'url' ? <LinkIcon aria-hidden="true" /> : <Mail aria-hidden="true" />}
-                    </div>
-                    <div className="scan-info">
-                      <p className="scan-title">{scan.type === 'url' ? scan.url : scan.email}</p>
-                      <div className="scan-details-row">
-                        <span className={`status-badge ${styles.badge}`}>
-                          {scan.result}
-                        </span>
-                        <span className="scan-details">{scan.details} - {formatTimeAgo(scan.timestamp)}</span>
-                      </div>
-                    </div>
-                    <Link to={`/scan/${scan.id}`} className="scan-link">
-                      View Details <ArrowRight className="icon-sm" aria-hidden="true" />
-                    </Link>
-                  </div>
-                );
-              })
-            )}
+              <div className="resource-content">
+                <h4>How to Recognize and Avoid Phishing Scams</h4>
+                <p>Official guide from the FTC on spotting phishing attempts.</p>
+                <div className="resource-source">Federal Trade Commission</div>
+              </div>
+            </a>
+            <a className="resource-card" href="https://www.cisa.gov/news-events/news/phishing-attacks-common-and-dangerous" target="_blank" rel="noopener noreferrer">
+              <div className="resource-icon amber">
+                <AlertTriangle size={24} />
+              </div>
+              <div className="resource-content">
+                <h4>Phishing Attacks - Common and Dangerous</h4>
+                <p>Learn about the latest phishing threats and prevention methods.</p>
+                <div className="resource-source">CISA</div>
+              </div>
+            </a>
+            <a className="resource-card" href="https://www.youtube.com/watch?v=UzvPP6_LRHc" target="_blank" rel="noopener noreferrer">
+              <div className="resource-icon rose">
+                <Coffee size={24} />
+              </div>
+              <div className="resource-content">
+                <h4>Phishing: How to Spot a Scam</h4>
+                <p>A short video on identifying phishing emails and messages.</p>
+                <div className="resource-source">Google</div>
+              </div>
+            </a>
+            <a className="resource-card" href="https://www.phishing.org/10-ways-to-avoid-phishing-scams" target="_blank" rel="noopener noreferrer">
+              <div className="resource-icon green">
+                <Shield size={24} />
+              </div>
+              <div className="resource-content">
+                <h4>10 Ways to Avoid Phishing Scams</h4>
+                <p>Practical tips to protect yourself from phishing attempts.</p>
+                <div className="resource-source">Phishing.org</div>
+              </div>
+            </a>
           </div>
-          {!loading && recentScans.length > 0 && (
-            <div className="view-all-container">
-              <Link to="/scans" className="view-all-link">
-                View All Scans <ArrowRight className="icon-sm" aria-hidden="true" />
-              </Link>
-            </div>
-          )}
         </section>
       </main>
+
+      {/* Footer */}
+      <footer className="dashboard-footer">
+        <div className="footer-content">
+          <div className="footer-logo">
+            <Shield size={20} />
+            <span>PhishGuard</span>
+          </div>
+          <div className="footer-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+            <a href="#">Contact Support</a>
+          </div>
+          <div className="footer-copyright">
+            © 2025 PhishGuard. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

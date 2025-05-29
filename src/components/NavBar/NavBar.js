@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Shield, Search, Bell, User, Menu, X, ChevronDown, Settings, LogOut
@@ -9,8 +9,18 @@ const NavBar = () => {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [username, setUsername] = useState('');
+
   const profileMenuRef = useRef(null);
   const profileBtnRef = useRef(null);
+
+  // Fetch username from localStorage
+  useEffect(() => {
+    const storedUsername = localStorage.getItem('username');
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
 
   // Click outside handler for profile menu
   useEffect(() => {
@@ -31,7 +41,8 @@ const NavBar = () => {
   }, [showProfileMenu]);
 
   const handleLogout = useCallback(() => {
-    // Add your logout logic here (e.g., clear tokens, state)
+    // Clear username from localStorage upon logout
+    localStorage.removeItem('username');
     navigate('/');
   }, [navigate]);
 
@@ -88,7 +99,7 @@ const NavBar = () => {
               aria-haspopup="true"
             >
               <User className="icon-sm" aria-hidden="true" />
-              <span>John Doe</span>
+              <span>{username || 'John Doe'}</span> {/* Display the username here */}
               <ChevronDown className="icon-sm" aria-hidden="true" />
             </button>
             {showProfileMenu && (

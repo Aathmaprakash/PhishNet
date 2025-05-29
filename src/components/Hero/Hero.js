@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Shield, Lock, Mail, Eye, EyeOff, RefreshCw } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { CognitoUserPool, CognitoUser, AuthenticationDetails } from 'amazon-cognito-identity-js';
 import '../Hero/hero.css';
 
 const Hero = () => {
@@ -14,9 +14,16 @@ const Hero = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   
-  const { login } = useAuth();
+  // Cognito User Pool configuration
+  const poolData = {
+    UserPoolId: 'us-east-1_ScYHWN24e',
+    ClientId: '7agpojb898lt5mniik9eqq60nn'
+  };
+  
+  const userPool = new CognitoUserPool(poolData);
 
   useEffect(() => {
+    
     const timer = setTimeout(() => {
       setIsVisible(true);
     }, 100);
@@ -30,19 +37,99 @@ const Hero = () => {
     setIsLoading(true);
     
     try {
+      // Validate inputs
       if (!email.trim() || !password.trim()) {
         throw new Error('Please fill in all fields');
       }
       
-      await login(email, password);
-      // The redirect will happen automatically
+      console.log('Login attempt with:', { email }); // Don't log password
+      
+      // Create authentication details with user credentials
+      const authenticationDetails = new AuthenticationDetails({
+        Username: email.trim(), // Ensure trimmed values
+        Password: password,
+      });
+      
+      // Create the Cognito user object
+      const userData = {
+        Username: email.trim(),
+        Pool: userPool
+      };
+      
+      const cognitoUser = new CognitoUser(userData);
+      
+      console.log('Cognito user created, attempting authentication...');
+      
+      // Authenticate the user
+      cognitoUser.authenticateUser(authenticationDetails, {
+        onSuccess: (result) => {
+          console.log('Login successful!', result);
+          
+          // Store tokens and username
+          try {
+            const accessToken = result.getAccessToken().getJwtToken();
+            localStorage.setItem('accessToken', accessToken);
+            // Extract username from email (everything before @)
+            const username = email.split('@')[0];
+            localStorage.setItem('username', username);
+            console.log('Access token and username stored successfully');
+          } catch (tokenError) {
+            console.error('Error storing token:', tokenError);
+          }
+          
+          setIsLoading(false);
+          navigate('/api/auth/login');
+        },
+        onFailure: (err) => {
+          console.error('Login error details:', {
+            name: err.name,
+            message: err.message,
+            code: err.code
+          });
+          
+          // Check for specific error types
+          if (err.code === 'UserNotFoundException') {
+            setError('User not found. Please check your email address.');
+          } else if (err.code === 'NotAuthorizedException') {
+            setError('Incorrect username or password. Please try again.');
+          } else if (err.code === 'UserNotConfirmedException') {
+            setError('Account not verified. Please check your email for verification link.');
+          } else {
+            setError(err.message || 'Login failed. Please try again.');
+          }
+          
+          setIsLoading(false);
+        },
+        newPasswordRequired: (userAttributes, requiredAttributes) => {
+          console.log('New password required', { userAttributes, requiredAttributes });
+          setError('You need to change your password before logging in.');
+          setIsLoading(false);
+          // Redirect to password change page or handle in-place
+          // navigate('/reset-password');
+        },
+        mfaRequired: (challengeName, challengeParameters) => {
+          console.log('MFA required', { challengeName, challengeParameters });
+          setError('Multi-factor authentication required.');
+          setIsLoading(false);
+          // Handle MFA flow
+        },
+        totpRequired: (challengeName, challengeParameters) => {
+          console.log('TOTP required', { challengeName, challengeParameters });
+          setError('Time-based one-time password required.');
+          setIsLoading(false);
+          // Handle TOTP flow
+        }
+      });
     } catch (error) {
+      console.error('Login exception:', error);
       setError(error.message || 'Login failed. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };
   
+  // Rest of your component remains the same...
+  // LoginForm and return statement unchanged
+
   const LoginForm = () => (
     <div className="auth-form-container">
       <div className="auth-header">
@@ -84,6 +171,7 @@ const Hero = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required 
+              autoComplete="current-password"
             />
             <button 
               type="button" 
@@ -155,8 +243,6 @@ const Hero = () => {
               <p className="hero-description">
                 Protect your organization with our AI-powered phishing detection system that identifies malicious URLs and emails before they can cause harm.
               </p>
-              
-             
             </>
           ) : (
             <LoginForm />
