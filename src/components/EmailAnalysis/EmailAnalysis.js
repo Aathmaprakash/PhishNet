@@ -26,7 +26,7 @@ const EmailPhishingDetection = () => {
   const [isExpanded, setIsExpanded] = useState({});
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  // Add smooth scroll behavior
+
   useEffect(() => {
     if (analysisResult) {
       const resultsElement = document.querySelector('.analysis-results-wrapper');
@@ -36,7 +36,7 @@ const EmailPhishingDetection = () => {
     }
   }, [analysisResult]);
 
-  // Simulate upload progress
+  
   useEffect(() => {
     if (isAnalyzing) {
       const interval = setInterval(() => {
@@ -54,7 +54,7 @@ const EmailPhishingDetection = () => {
     }
   }, [isAnalyzing]);
 
-  // Common phishing words/phrases to detect
+  
   const phishingWords = [
     "urgent", "verify", "immediately", "account suspended", "security alert",
     "update your information", "suspicious activity", "password expired",
@@ -65,7 +65,7 @@ const EmailPhishingDetection = () => {
 
   const analyzeEmail = async () => {
     if (!emailContent.trim() && !emailSubject.trim()) {
-      // Add a subtle shake animation to the input
+      
       const input = document.querySelector('.email-input');
       input.classList.add('shake');
       setTimeout(() => input.classList.remove('shake'), 500);
@@ -100,7 +100,7 @@ const EmailPhishingDetection = () => {
          try {
             errorBody = await response.json();
          } catch (e) {
-            // Ignore if response body is not JSON
+           
          }
          console.error("❌ API Response Error:", {
            status: response.status,
@@ -112,7 +112,7 @@ const EmailPhishingDetection = () => {
 
       const data = await response.json();
       
-      // Comprehensive console logging
+    
       console.group('🔍 Email Analysis Results');
       console.log('Full API Response:', data);
       
@@ -141,7 +141,7 @@ const EmailPhishingDetection = () => {
       console.groupEnd();
 
       setUploadProgress(100);
-      // Add a small delay to show the 100% progress
+     
       await new Promise(resolve => setTimeout(resolve, 300));
       setAnalysisResult(data);
 
@@ -173,13 +173,13 @@ const EmailPhishingDetection = () => {
       reader.onload = (e) => {
         const content = e.target.result;
         
-        // Try to extract subject if it's an .eml file
+     
         const subjectMatch = content.match(/Subject: (.*?)(\r?\n)/i);
         if (subjectMatch && subjectMatch[1]) {
           setEmailSubject(subjectMatch[1].trim());
         }
         
-        // Remove headers for cleaner display
+     
         const bodyStart = content.indexOf("\r\n\r\n");
         if (bodyStart > -1) {
           setEmailContent(content.substring(bodyStart).trim());

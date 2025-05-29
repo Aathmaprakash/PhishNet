@@ -38,34 +38,34 @@ const urlValidationService = {
       });
       const data = await response.json();
 
-      // Log the full response data to console
+     
       console.log("Full API Response:", data);
       
-      // Process the data to extract all relevant fields
+    
       const processedData = {
         url: data.details?.input || url,
         status: data.success ? 'Safe' : 'Phishing',
         details: data.message || 'No details provided',
         
-        // Extract nested risk data
+      
         riskleveldata: data.details?.riskLevel || 'Unknown',
         riskScore: data.details?.riskScore || 0,
         
-        // Extract IP and other info from nested fields
+     
         ip: data.details?.analysis?.dnsLookup?.ip,
         domain: data.details?.format?.hostname,
         
-        // Include redirects if available
+      
         redirectChain: data.details?.analysis?.redirects?.redirectChain,
         finalUrl: data.details?.analysis?.redirects?.finalUrl,
         
-        // Include certificate info
+      
         certificate: data.details?.analysis?.certificate,
         
-        // Include security checks
+        
         security: data.details?.security,
         
-        // Include the timestamp
+        
         timestamp: data.timestamp,
       };
       
@@ -139,7 +139,7 @@ const ResultDisplay = ({ result, onClear }) => {
   const [showCopyToast, setShowCopyToast] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
-  // Add necessary functions here based on your implementation
+
   return (
     <div className="result-display">
       {/* Your result display implementation */}
@@ -147,7 +147,7 @@ const ResultDisplay = ({ result, onClear }) => {
   );
 };
 
-// Add Modal Component
+
 const ScanDetailsModal = ({ scan, onClose }) => {
   useEffect(() => {
     if (scan) {
@@ -325,7 +325,7 @@ const ScanDetailsModal = ({ scan, onClose }) => {
   );
 };
 
-// Custom hook for user-specific storage
+
 const useUserStorage = (userId) => {
   const getStorageKey = (key) => `user_${userId}_${key}`;
   
@@ -370,28 +370,28 @@ const UrlChecker = () => {
   const [selectedScan, setSelectedScan] = useState(null);
   const [userId, setUserId] = useState('');
   
-  // Initialize user storage with current user ID
+  
   const userStorage = useUserStorage(userId);
 
-  // Fetch username and user ID, then load user-specific data
+  
   useEffect(() => {
     const storedUsername = localStorage.getItem('username');
     if (storedUsername) {
       setUsername(storedUsername);
-      // Generate userId from username (in a real app, you'd use a proper user ID)
+      
       const generatedUserId = btoa(storedUsername).replace(/[^a-zA-Z0-9]/g, '');
       setUserId(generatedUserId);
     } else {
-      // If no username found, redirect to login
+    
       navigate('/');
     }
   }, [navigate]);
 
-  // Load user-specific data after userId is set
+ 
   useEffect(() => {
     if (!userId) return;
     
-    // Load saved URL and result from user-specific storage
+   
     const savedResult = userStorage.getItem('urlAnalysisResult');
     const savedUrl = userStorage.getItem('urlInput');
     const savedScans = userStorage.getItem('recentScans', []);
@@ -402,7 +402,7 @@ const UrlChecker = () => {
     
   }, [userId]); // Only run when userId changes
 
-  // Click outside handler for profile menu
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -421,16 +421,16 @@ const UrlChecker = () => {
   }, [showProfileMenu]);
 
   const handleLogout = useCallback(() => {
-    // Clear only global auth data on logout, not user-specific data
+  
     localStorage.removeItem('username');
     navigate('/');
   }, [navigate]);
 
   const clearUserData = useCallback(() => {
-    // This would be used when completely removing a user account
+    
     if (!userId) return;
     
-    // Clear only this user's data
+    
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith(`user_${userId}_`)) {
         localStorage.removeItem(key);
@@ -452,7 +452,7 @@ const UrlChecker = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Don't proceed if userId is not set
+   
     if (!userId) {
       setError('⚠️ User not logged in');
       navigate('/');
@@ -480,7 +480,7 @@ const UrlChecker = () => {
       setResult(analysis);
       setUrl(trimmed);
 
-      // Log all scan details to console
+      
       console.group('🔍 URL Scan Details');
       console.log('Basic Information:', {
         url: analysis.url,
@@ -519,11 +519,11 @@ const UrlChecker = () => {
       console.log('Full Analysis Data:', analysis);
       console.groupEnd();
 
-      // Save to user-specific storage
+   
       userStorage.setItem('urlAnalysisResult', analysis);
       userStorage.setItem('urlInput', trimmed);
 
-      // Update recent scans with enhanced information
+   
       const newScan = {
         id: Date.now(),
         url: trimmed,
@@ -565,7 +565,7 @@ const UrlChecker = () => {
     setSelectedScan(scan);
   };
 
-  // If no valid user is found, show a minimal redirect message
+  
   if (!userId) {
     return (
       <div className="redirect-container">

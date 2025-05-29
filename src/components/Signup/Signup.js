@@ -17,7 +17,7 @@ const Signup = () => {
   const [confirmationSent, setConfirmationSent] = useState(false);
   const [confirmationCode, setConfirmationCode] = useState('');
   
-  // Cognito User Pool configuration
+
   const poolData = {
     UserPoolId: 'us-east-1_ScYHWN24e',
     ClientId: '7agpojb898lt5mniik9eqq60nn'
@@ -75,7 +75,7 @@ const Signup = () => {
     setLoading(true);
     setErrorMessage('');
   
-    // Define Cognito user attributes
+  
     const attributeList = [
       new CognitoUserAttribute({
         Name: 'name',
@@ -88,7 +88,7 @@ const Signup = () => {
     ];
   
     try {
-      // Sign up the user in Cognito
+      
       userPool.signUp(email, password, attributeList, null, (err, result) => {
         setLoading(false);
   
@@ -98,10 +98,10 @@ const Signup = () => {
           return;
         }
   
-        // Success - user account created
+      
         console.log('User signup successful:', result);
   
-        // Store username in localStorage
+       
         localStorage.setItem('username', name);
         setConfirmationSent(true);
       });
@@ -134,13 +134,13 @@ const Signup = () => {
         return;
       }
       
-      // Success - redirect to login
+     
       console.log('Confirmation successful:', result);
       navigate('/');
     });
   };
   
-  // Render confirmation form if confirmation code needs to be entered
+ 
   if (confirmationSent) {
     return (
       <div className="auth-container">
@@ -192,7 +192,7 @@ const Signup = () => {
     );
   }
 
-  // Main signup form
+ 
   return (
     <div className="auth-container">
       <div className="background-elements">
